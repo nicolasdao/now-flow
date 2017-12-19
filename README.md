@@ -46,7 +46,7 @@ npm install now-flow -g
 Or embed it inside your project to run it through npm
 
 ```
-npm install now-flow --save
+npm install now-flow --save-dev
 ```
 
 # How To Use It

@@ -8,11 +8,12 @@
   },
   "scripts": {
     "eslint": "eslint ./src index.js --fix",
+    "release": "standard-version",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nicolasdao/now-workflow.git"
+    "url": "git+https://github.com/nicolasdao/now-flow.git"
   },
   "keywords": [
     "Zeit",
@@ -24,9 +25,9 @@
   "author": "Nicolas Dao",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/nicolasdao/now-workflow/issues"
+    "url": "https://github.com/nicolasdao/now-flow/issues"
   },
-  "homepage": "https://github.com/nicolasdao/now-workflow#readme",
+  "homepage": "https://github.com/nicolasdao/now-flow#readme",
   "dependencies": {
     "colors": "^1.1.2",
     "commander": "^2.12.2",
@@ -35,6 +36,7 @@
     "shortid": "^2.2.8"
   },
   "devDependencies": {
-    "eslint": "^4.13.1"
+    "eslint": "^4.13.1",
+    "standard-version": "^4.2.0"
   }
 }

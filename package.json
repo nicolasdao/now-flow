@@ -1,0 +1,40 @@
+{
+  "name": "now-flow",
+  "version": "0.0.1",
+  "description": "Add deployment workflows to Zeit now",
+  "main": "index.js",
+  "bin": {
+    "nowflow": "./index.js"
+  },
+  "scripts": {
+    "eslint": "eslint ./src index.js --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicolasdao/now-workflow.git"
+  },
+  "keywords": [
+    "Zeit",
+    "now",
+    "deploy",
+    "deployment",
+    "worflow"
+  ],
+  "author": "Nicolas Dao",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/nicolasdao/now-workflow/issues"
+  },
+  "homepage": "https://github.com/nicolasdao/now-workflow#readme",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "commander": "^2.12.2",
+    "lodash": "^4.17.4",
+    "rimraf": "^2.6.2",
+    "shortid": "^2.2.8"
+  },
+  "devDependencies": {
+    "eslint": "^4.13.1"
+  }
+}

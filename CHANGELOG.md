@@ -1,0 +1,12 @@
+# Change Log
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+<a name="0.1.0"></a>
+# 0.1.0 (2017-12-19)
+
+
+### Features
+
+* Add standard version ([2ed9d44](https://github.com/nicolasdao/now-flow/commit/2ed9d44))
+* Add support to chain deployment and aliasing in a single command ([4d29b01](https://github.com/nicolasdao/now-flow/commit/4d29b01))

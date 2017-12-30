@@ -41,7 +41,7 @@ const updatePackageScripts = (env='default') => {
 
 		return updateJsonFile(pkgPath, newPkg)
 			.then(() => ({ path: pkgPath, current: currentPkg, new: newPkg }))
-		// If updating the package.json fails, attempt to revert
+			// If updating the package.json fails, attempt to revert
 			.catch(err => {
 				return updateJsonFile(pkgPath, currentPkg)
 					.catch(() => null)
@@ -57,16 +57,16 @@ const updateNowAlias = (env='default', toogle=true) => {
 	const currentNowConfig = require(nowPath) || {}
 	const newNowConfig = duplicate(currentNowConfig)
 
-	const envConfig = (currentNowConfig.env || {})[env]
-	if (!envConfig)
+	const currentEnvConfig = (currentNowConfig.env || {})[env]
+	if (!currentEnvConfig)
 		throw new Error(`No environment named '${env.bold}' in ${'now.json'.bold}`)
 
-	if (envConfig.alias != undefined && toogle) {
-		newNowConfig.alias = envConfig.alias
+	if (currentEnvConfig.alias != undefined && toogle) {
+		newNowConfig.alias = currentEnvConfig.alias
 		
 		return updateJsonFile(nowPath, newNowConfig)
 			.then(() => ({ alias: toogle, path: nowPath, current: currentNowConfig, new: newNowConfig }))
-		// If updating the now.json fails, attempt to revert
+			// If updating the now.json fails, attempt to revert
 			.catch(err => {
 				return updateJsonFile(nowPath, currentNowConfig)
 					.catch(() => null)
@@ -77,43 +77,83 @@ const updateNowAlias = (env='default', toogle=true) => {
 		return Promise.resolve({ alias: false, path: nowPath, current: null })
 }
 
+const updateNowActiveEnv = (env='default') => {
+	const nowPath = getAbsPath('now.json')
+	const currentNowConfig = require(nowPath) || {}
+	const newNowConfig = duplicate(currentNowConfig)
+
+	const currentEnvConfig = (currentNowConfig.env || {})[env]
+	if (!currentEnvConfig)
+		throw new Error(`No environment named '${env.bold}' in ${'now.json'.bold}`)
+
+	if (!currentEnvConfig.active || currentEnvConfig.active == env) {
+		newNowConfig.env.active = env
+		
+		return updateJsonFile(nowPath, newNowConfig)
+			.then(() => ({ restore: true, path: nowPath, current: currentNowConfig, new: newNowConfig }))
+			// If updating the now.json fails, attempt to revert
+			.catch(err => {
+				return updateJsonFile(nowPath, currentNowConfig)
+					.catch(() => null)
+					.then(() => { throw err })
+			})
+	}
+	else 
+		return Promise.resolve({ restore: false, path: nowPath, current: currentNowConfig, new: newNowConfig })
+}
+
 const updateJsonFile = (filePath, jsonObj={}) => {
 	const str = JSON.stringify(jsonObj, null, '\t')
 	return writeToFile(filePath, str)
 }
 
-const deploy = (env='default', noalias=false) => updatePackageScripts(env)
-	.catch(err => exit(err.message.italic.red))
-	.then(pkg => {
-		try {
-			require('child_process').execSync('now', { stdio: 'inherit' })
-		}
-		catch(err) {
+const deploy = (env='default', noalias=false) => 
+	// 1. Update the "scripts" property of the package.json before deploying
+	updatePackageScripts(env)
+		.catch(err => exit(err.message.italic.red))
+	// 2. Update the "env"."active" property of the now.json before deploying
+		.then(pkg => updateNowActiveEnv(env).then(now => ({ pkg, now })))
+		.catch(err => exit(err.message.italic.red))
+	// 3. Deploy
+		.then(({ pkg, now }) => {
+			try {
+			// 3.1. Deploy using now CLI
+				require('child_process').execSync('now', { stdio: 'inherit' })
+			}
+			catch(err) {
+				return updateJsonFile(pkg.path, pkg.current)
+					.then(() => exit())
+					.catch(() => exit())
+			}
+			// 3.2. Restore the package.json and the now.json to what it was before
 			return updateJsonFile(pkg.path, pkg.current)
-				.then(() => exit())
-				.catch(() => exit())
-		}
-
-		return updateJsonFile(pkg.path, pkg.current)
-	})
-	.catch(err => exit(err.message.italic.red))
-	.then(() => {
-		if (!noalias)
-			return updateNowAlias(env).then(now => {
-				if (now.alias) {
-					try {
-						require('child_process').execSync('now alias', { stdio: 'inherit' })
-					}
-					catch(err) {
+				.then(() => {
+					if (now && now.restore)
 						return updateJsonFile(now.path, now.current)
-							.then(() => exit())
-							.catch(() => exit())
-					}
+				})
+		})
+		.catch(err => exit(err.message.italic.red))
+	// 4. Alias the deployment
+		.then(() => {
+			if (!noalias)
+			// 4.1. Update the "alias" property of the now.json file based on the current environment
+				return updateNowAlias(env).then(now => {
+					if (now.alias) {
+						try {
+						// 4.2. Alias using now CLI
+							require('child_process').execSync('now alias', { stdio: 'inherit' })
+						}
+						catch(err) {
+							return updateJsonFile(now.path, now.current)
+								.then(() => exit())
+								.catch(() => exit())
+						}
 
-					return updateJsonFile(now.path, now.current)
-				}
-			})
-	})
+						// 4.3. Restore the now.json to what it was before
+						return updateJsonFile(now.path, now.current)
+					}
+				})
+		})
 
 module.exports = {
 	deploy

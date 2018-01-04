@@ -2,6 +2,42 @@
 
 NowFlow reduces the issues that arise when deploying to multiple environments (e.g. dev, staging, production, ...) using [Zeit now-CLI](https://zeit.co/now). Simply define your alias and all your environment variables specific to each environment inside your traditional __now.json__, and let NowFlow do the rest. 
 
+[__*Zeit now-CLI*__](https://zeit.co/now) allows to deploy serverless applications to its own serverless infrastructure or to the most popular FaaS (i.e. Function as a Service) solutions (e.g. [Google Cloud Functions](https://cloud.google.com/functions/), [AWS Lambdas](https://aws.amazon.com/lambda)). However, a common challenge is to establish a sound strategy to manage multiple environments (e.g. dev, staging, production, ...). This process is obviously proned to errors. It is also tedious if you're deploying often. This is why we created __*now-flow*__.
+
+# Table of Contents
+> * [Install](#install)
+> * [Problem Explained](#problem-explained)
+> * [Solution](#solution)
+>   - [How NowFlow Works?](#how-nowflow-works)
+>   - [The Most Minimal Setup](#the-most-minimal-setup)
+>   - [Skipping Aliasing](#skipping-aliasing)
+>   - [Modifying The package.json's "scripts" property For Each Environment](#modifying-the-packagejsons-scripts-property-for-each-environment)
+> * [FAQ](*faq)
+> * [About Us](#this-is-what-we-re-up-to)
+> * [License](#license)
+
+# Install
+## Prerequisite
+[Zeit now-CLI](https://github.com/zeit/now-cli) must have been installed globally:
+```
+npm install now -g
+```
+## Install NowFlow
+Either install it globally:
+```
+npm install now-flow -g
+```
+
+Or embed it inside your project to run it through npm:
+
+```
+npm install now-flow --save-dev
+```
+
+The reason you would do that is to simply embed it in your project and that add a script in your _package.json_ similar to `"deploy:prod": "nowflow production"`. That way your collaborators don't have to worry to install globally yet another tool and can simply run `npm run deploy:prod`.
+
+# Problem Explained
+
 [__*Zeit now-CLI*__](https://zeit.co/now) allows to deploy serverless applications to its own serverless infrastructure or to the most popular FaaS (i.e. Function as a Service) solutions (e.g. [Google Cloud Functions](https://cloud.google.com/functions/), [AWS Lambdas](https://aws.amazon.com/lambda)). However, a common challenge is to establish a sound strategy to manage multiple environments (e.g. dev, staging, production, ...). Typically, those environments might have a different:
 - `hostingType` (e.g. localhost, now, gcp, aws, ...).
 - `alias` if the application is deployed to [Zeit now-CLI](https://zeit.co/now).
@@ -17,7 +53,11 @@ The manual solution is to:
 > - Update the `alias` property of the _now.json_ file to the alias name specific to your environment.
 > - Run `now alias`
 
-This process is obviously proned to errors. It is also tedious if you're deploying often. This is why we created __*now-flow*__. Configure your _now.json_ once, and then replace all the manual steps above with a single command similar to `nowflow production`.
+This process is obviously proned to errors. It is also tedious if you're deploying often. This is why we created __*now-flow*__. 
+
+# Solution
+## How NowFlow Works?
+Configure your _now.json_ once, and then replace all the manual steps above with a single command similar to `nowflow production`.
 
 __*Example:*__
 
@@ -72,28 +112,7 @@ No more deployment then aliasing steps. No more worries that some environment va
 
 > Learn more details on how NowFlow works in the [How Does NowFlow Work?](#how-does-nowflow-work) under the [FAQ](#faq) section.
 
-# Install
-## Prerequisite
-[Zeit now-CLI](https://github.com/zeit/now-cli) must have been installed globally:
-```
-npm install now -g
-```
-## Install NowFlow
-Either install it globally:
-```
-npm install now-flow -g
-```
-
-Or embed it inside your project to run it through npm:
-
-```
-npm install now-flow --save-dev
-```
-
-The reason you would do that is to simply embed it in your project and that add a script in your _package.json_ similar to `"deploy:prod": "nowflow production"`. That way your collaborators don't have to worry to install globally yet another tool and can simply run `npm run deploy:prod`.
-
-# How To Use It
-## Basic
+## The Most Minimal Setup
 You must first create a __*now.json*__ file in the root of your project's directory as follow:
 ```js
 {

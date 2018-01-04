@@ -12,7 +12,7 @@ NowFlow reduces the issues that arise when deploying to multiple environments (e
 >   - [The Most Minimal Setup](#the-most-minimal-setup)
 >   - [Skipping Aliasing](#skipping-aliasing)
 >   - [Modifying The package.json's "scripts" property For Each Environment](#modifying-the-packagejsons-scripts-property-for-each-environment)
-> * [FAQ](*faq)
+> * [FAQ](#faq)
 > * [About Us](#this-is-what-we-re-up-to)
 > * [License](#license)
 

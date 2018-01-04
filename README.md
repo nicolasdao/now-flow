@@ -1,6 +1,6 @@
 # NowFlow - Automate your Zeit Now Deployments &middot;  [![NPM](https://img.shields.io/npm/v/now-flow.svg?style=flat)](https://www.npmjs.com/package/now-flow) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Neap](https://neap.co/img/made_by_neap.svg)](#this-is-what-we-re-up-to)
 
-NowFlow reduces the issues that arise when deploying to multiple environments (e.g. dev, staging, production, ...). Simply define your alias and all your environment variables specific to each environment inside your traditional now.json, and let NowFlow do the rest. 
+NowFlow reduces the issues that arise when deploying to multiple environments (e.g. dev, staging, production, ...) using [Zeit now-CLI](https://zeit.co/now). Simply define your alias and all your environment variables specific to each environment inside your traditional __now.json__, and let NowFlow do the rest. 
 
 [__*Zeit now-CLI*__](https://zeit.co/now) allows to deploy serverless applications to its own serverless infrastructure or to the most popular FaaS (i.e. Function as a Service) solutions (e.g. [Google Cloud Functions](https://cloud.google.com/functions/), [AWS Lambdas](https://aws.amazon.com/lambda)). However, a common challenge is to establish a sound strategy to manage multiple environments (e.g. dev, staging, production, ...). Typically, those environments might have a different:
 - `hostingType` (e.g. localhost, now, gcp, aws, ...).

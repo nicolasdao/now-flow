@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017, Neap Pty Ltd.
+ * Copyright (c) 2018, Neap Pty Ltd.
  * All rights reserved.
  * 
  * This source code is licensed under the BSD-style license found in the
@@ -40,7 +40,7 @@ const getJsonFiles = (env='default') => {
 		exit(err)
 	}
 
-	const envConfig = (now.env || {})[env]
+	const envConfig = (now.environment || {})[env]
 	if (!envConfig)
 		exit(`No environment named '${env.bold}' in ${'now.json'.bold}`.italic.red)
 
@@ -70,7 +70,7 @@ const updatePackageJson = (env='default', { pkgPath, pkg, now }) => {
 	const currentPkgConfig = pkg
 	const newPkgConfig = duplicate(currentPkgConfig)
 	
-	const envConfig = (now.env || {})[env]
+	const envConfig = (now.environment || {})[env]
 
 	if (envConfig.scripts != undefined) {
 		if (!currentPkgConfig.scripts)
@@ -137,7 +137,7 @@ const updateNowJson = (env='default', { nowPath, now }) => {
 	const currentNowConfig = now
 	const newNowConfig = duplicate(currentNowConfig)
 
-	const currentEnvConfig = (now.env || {})[env]
+	const currentEnvConfig = (now.environment || {})[env]
 
 	const aliasMustBeSet = currentEnvConfig.alias != undefined && newNowConfig.alias != currentEnvConfig.alias
 	const activeEnvMustBeSet = !currentEnvConfig.active || currentEnvConfig.active == env
@@ -148,7 +148,7 @@ const updateNowJson = (env='default', { nowPath, now }) => {
 		if (aliasMustBeSet)
 			newNowConfig.alias = currentEnvConfig.alias
 		if (activeEnvMustBeSet)
-			newNowConfig.env.active = env
+			newNowConfig.environment.active = env
 		if (gcpMustBeSet)
 			newNowConfig.gcp = currentEnvConfig.gcp
 		

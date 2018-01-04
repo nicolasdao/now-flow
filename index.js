@@ -9,7 +9,7 @@
 'use strict'
 
 const program = require('commander')
-const { deploy } = require('./src/nowf')
+const { deploy } = require('./src/nowflow')
 
 program
 	.command('* <env>')

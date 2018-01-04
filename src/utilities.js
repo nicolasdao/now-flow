@@ -182,6 +182,8 @@ const createDir = p => new Promise((onSuccess, onFailure) => fs.mkdir(p, err => 
 
 const deleteFolder = f => new Promise(onSuccess => rimraf(f, () => onSuccess()))
 
+const deleteFile = f => new Promise((onSuccess, onFailure) => fs.unlink(f, err => err ? onFailure(err) : onSuccess()))
+
 const writeToFile = (filePath, stringContent) => new Promise((onSuccess, onFailure) => fs.writeFile(filePath, stringContent, err => 
 	err ? onFailure(err) : onSuccess()))
 
@@ -290,6 +292,7 @@ module.exports = {
 		fileExists,
 		createDir,
 		deleteFolder,
+		deleteFile,
 		writeToFile,
 		createFolders
 	},

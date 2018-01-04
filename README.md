@@ -6,33 +6,73 @@
 [1]: https://img.shields.io/npm/v/now-flow.svg?style=flat
 [2]: https://www.npmjs.com/package/now-flow
 
-Define your alias and all your environment variables inside your traditional __*now.json*__, and let __*now-flow*__ do the rest.
+[__*Zeit now-CLI*__](https://zeit.co/now) allows to deploy serverless applications to its own serverless infrastructure or to the most popular FaaS (i.e. Function as a Service) solutions (e.g. [Google Cloud Functions](https://cloud.google.com/functions/), [AWS Lambdas](https://aws.amazon.com/lambda)).
+
+However, a common challenge is to establish a sound strategy to manage multiple environments (e.g. dev, staging, production, ...). Typically, those environments might have a different:
+- __*Hosting type*__ (e.g. localhost, now, gcp, aws, ...).
+- __*alias*__ if the application is deployed to [Zeit now-CLI](https://zeit.co/now).
+- `start` script in the package.json.
+- Many other environment specific variables.
+
+The manual solution is to:
+1. Update the `start` script in the _package.json_ specific to your environment if you deploy to Zeit Now (all your environments may share the same start script, but sometimes it doesn't).
+2. If you're deploying to [Google Cloud Functions](https://cloud.google.com/functions/), you might need to configure the `gcp` property in the _now.json_.
+3. If you're using the [Webfunc](https://github.com/nicolasdao/webfunc) serverless web framework, then you also need to set up the `env.active` property to the target environment in the _now.json_.
+4. Run the right command (e.g. `now` if deploying to [Zeit Now](https://zeit.co/now), and `now gcp` if deploying to [Google Cloud Functions](https://cloud.google.com/functions/)).
+5. Potentially _alias_ your deployment if your're deploying to [Zeit Now](https://zeit.co/now):
+  - Update the `alias` property of the _now.json_ file to the alias name specific to your environment.
+  - Run `now alias`
+
+This process is obviously proned to errors. It is also tedious if you're deploying often. This is why we created __*now-flow*__. Configure your _now.json_ once, and then replace all the manual step above with a single command similar to `nowflow production`.
+
+__*Example:*__
 
 _now.json_
 ```js
 {
   "env": {
+    "active": "default",
+    "default": {
+      "hostingType": "localhost"
+    },
+    "staging": {
+      "hostingType": "gcp",
+      "gcp": {
+        "functionName": "yourapp-test",
+        "memory": 128
+      }
+    },
     "production": {
+      "hostingType": "now",
       "scripts": {
         "start": "NODE_ENV=production node index.js"
       },
       "alias": "yourapp-prod"
-    },
-    "test": {
-      "scripts": {
-        "start": "NODE_ENV=test node index.js"
-      },
-      "alias": "yourapp-test"
     }
   }
 }
 ```
 
+To deploy the production environment, simply run:
+
 ```
 nowflow production 
 ```
 
-The above will make sure that the _package.json_ that is being deployed will contain the _start_ script `"NODE_ENV=production node index.js"` and that once the deployment to [Zeit](https://zeit.co/now) is finished, it is automatically aliased to `yourapp-prod`. 
+This will deploy to [Zeit Now](https://zeit.co/now) and make sure that:
+- The _package.json_ that is being deployed will contain the _start_ script `"NODE_ENV=production node index.js"`.
+- The `env.active` property of the _now.json_ is set to `production`.
+- Once the deployment to [Zeit Now](https://zeit.co/now) is finished, it is automatically aliased to `yourapp-prod`. 
+
+On the contrary, to deploy the staging environment, simply run:
+
+```
+nowflow staging 
+```
+
+This will deploy to [Google Cloud Functions](https://cloud.google.com/functions/) and make sure that:
+- The `env.active` property of the _now.json_ is set to `staging`.
+- The _now.json_ contains a `gcp` property identical to the one defined in the staging configuration.
 
 No more deployment then aliasing steps. No more worries that some environment variables have been properly deployed to the right environment. 
 

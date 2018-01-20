@@ -8,6 +8,9 @@
 const path = require('path')
 require('colors')
 const { writeToFile, deleteFile } = require('./utilities').files
+const configFileManager = require('./util/config-files')
+const gcpDeploy = require('./providers/gcp/deploy')
+const awsDeploy = require('./providers/aws/deploy')
 
 /*eslint-disable */
 const getAbsPath = relativePath => path.join(process.cwd(), relativePath)
@@ -228,8 +231,16 @@ const deploy = (env='default', noalias=false) => {
 		.then(() => {
 			if (!nowUpdate.err && !pkgUpdate.err) {
 				try {
-					if (nowUpdate.hostingType == 'gcp')
-						require('child_process').execSync('now gcp', { stdio: 'inherit' })
+					if (nowUpdate.hostingType == 'gcp') {
+						const deployConfig = {
+							config: configFileManager.readConfigFile(),
+							authConfig: configFileManager.readAuthConfigFile(),
+							argv: configFileManager.readLocalConfig()
+						}
+						gcpDeploy(deployConfig)
+
+						//require('child_process').execSync('now gcp', { stdio: 'inherit' })
+					}
 					else
 						require('child_process').execSync('now', { stdio: 'inherit' })
 				}

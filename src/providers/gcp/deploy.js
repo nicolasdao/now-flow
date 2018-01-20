@@ -39,6 +39,21 @@ const getProcess = () => process
  * @param  {Object} ctx.argv       JSON object stored under now.json in the root of your project
  */
 const deploy = async (ctx) => {
+
+	// Example now.json for gcpConfig
+	// {
+	//   functionName: String,
+	//   timeout: String,
+	//   memory: Number,
+	//   region: String
+	// }
+	let gcpConfig = {}
+	try {
+		gcpConfig = ctx.argv.gcp || {}
+	} catch (err) {
+		console.error(error('Couldn\'t find "gcp" property in now.json'))
+	}
+
 	const { argv: argv_ } = ctx
 	const argv = mri(argv_, {
 		boolean: ['help'],
@@ -86,20 +101,6 @@ const deploy = async (ctx) => {
 		} else {
 			throw err
 		}
-	}
-
-	// Example now.json for gcpConfig
-	// {
-	//   functionName: String,
-	//   timeout: String,
-	//   memory: Number,
-	//   region: String
-	// }
-	let gcpConfig = {}
-	try {
-		gcpConfig = desc.nowJSON.gcp
-	} catch (err) {
-		console.error(error('Couldn\'t find "gcp" property in now.json'))
 	}
 
 	const overrides = {

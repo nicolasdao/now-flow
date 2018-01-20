@@ -31,6 +31,7 @@
   "dependencies": {
     "ansi-escapes": "^3.0.0",
     "ansi-regex": "^3.0.0",
+    "archiver": "^2.1.1",
     "async-retry": "^1.1.4",
     "aws-sdk": "^2.185.0",
     "bytes": "^3.0.0",
@@ -39,6 +40,7 @@
     "clipboardy": "^1.2.2",
     "colors": "^1.1.2",
     "commander": "^2.12.2",
+    "convert-stream": "^1.0.2",
     "fs-extra": "^5.0.0",
     "http": "0.0.0",
     "inquirer": "^5.0.0",

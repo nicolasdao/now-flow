@@ -1,6 +1,6 @@
 {
   "name": "now-flow",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Add deployment workflows to Zeit now",
   "main": "index.js",
   "bin": {

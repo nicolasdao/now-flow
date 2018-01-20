@@ -6,10 +6,13 @@
     },
     "extends": "eslint:recommended",
     "parserOptions": {
-        "sourceType": "module"
+        "sourceType": "module",
+        "ecmaVersion": 8
     },
     "rules": {
+        "no-process-env": 0,
         "no-console":0,
+        "no-mixed-spaces-and-tabs": 0,
         "indent": [
             "error",
             "tab"

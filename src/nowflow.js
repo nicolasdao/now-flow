@@ -144,8 +144,9 @@ const updateNowJson = (env='default', { nowPath, now }) => {
 
 	const aliasMustBeSet = currentEnvConfig.alias != undefined && newNowConfig.alias != currentEnvConfig.alias
 	const activeEnvMustBeSet = !currentEnvConfig.active || currentEnvConfig.active == env
-	const gcpMustBeSet = currentEnvConfig.gcp != undefined
 	const hostingType = !currentEnvConfig.hostingType || currentEnvConfig.hostingType == 'localhost' ? 'localhost' : currentEnvConfig.hostingType
+	const gcpMustBeSet = hostingType == 'gcp' && currentEnvConfig.gcp != undefined
+	const awsMustBeSet = hostingType == 'aws' && currentEnvConfig.aws != undefined
 
 	if (aliasMustBeSet || activeEnvMustBeSet || gcpMustBeSet) {
 		if (aliasMustBeSet)
@@ -154,6 +155,8 @@ const updateNowJson = (env='default', { nowPath, now }) => {
 			newNowConfig.environment.active = env
 		if (gcpMustBeSet)
 			newNowConfig.gcp = currentEnvConfig.gcp
+		if (awsMustBeSet)
+			newNowConfig.aws = currentEnvConfig.aws
 		
 		return createOrUpdateJsonFile(nowBackupPath, currentNowConfig)
 			.catch(err => ({ 

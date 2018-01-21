@@ -32,27 +32,61 @@ const { writeToConfigFile } = require('../../util/config-files')
 const getProcess = () => process
 /*eslint-enable */
 
+const TRIGGER_TYPES = { 'https': true, 'cloud.pubsub': true, 'cloud.storage': true, 'google.firebase.database': true }
+const EVENT_TYPES = { 'cloud.pubsub': 'topic.publish', 'cloud.storage': 'object.change', 'google.firebase.database': 'ref.write' }
 /**
  * [description]
  * @param  {Object} ctx.authConfig JSON object stored under ~/.now/auth.json
  * @param  {Object} ctx.config     JSON object stored under ~/.now/config.json
  * @param  {Object} ctx.argv       JSON object stored under now.json in the root of your project
  */
-const deploy = async (ctx) => {
+const deploy = async (ctx={}) => {
+
+	const { project } = ctx.authConfig.credentials.find(p => p.provider === 'gcp') || {}
+	if (!project) {
+		console.error(error(`Missing required 'gcp' project configuration. Run 'now gcp login' and choose a project.`))
+		return 1
+	}
 
 	// Example now.json for gcpConfig
 	// {
 	//   functionName: String,
 	//   timeout: String,
 	//   memory: Number,
-	//   region: String
+	//   region: String,
+	//   trigger: {
+	//   	type: String, (https || cloud.pubsub || cloud.storage || google.firebase.database)
+	//   	topic: String, 
+	//   	bucket: String
+	//   }
 	// }
-	let gcpConfig = {}
-	try {
-		gcpConfig = ctx.argv.gcp || {}
-	} catch (err) {
-		console.error(error('Couldn\'t find "gcp" property in now.json'))
+	const gcpConfig = (ctx.argv || {}).gcp || {}
+	const region = gcpConfig.region || 'us-central1'
+	const deploymentId = gcpConfig.functionName || 'now-' + desc.name + '-' + (await uid(10))
+	const _timeout = gcpConfig.timeout || '15s'
+	const memory = gcpConfig.memory || 512
+	if (gcpConfig.trigger && gcpConfig.trigger.type && !TRIGGER_TYPES[gcpConfig.trigger.type]) {
+		console.error(error(`Invalid trigger type '${gcpConfig.trigger.type}'. Valid values: 'https', 'cloud.pubsub', 'cloud.storage' and 'google.firebase.database'.`))
+		return 1
 	}
+	const triggerType = gcpConfig.trigger && gcpConfig.trigger.type ? gcpConfig.trigger.type : 'https'
+
+	if (triggerType == 'cloud.pubsub' && !gcpConfig.trigger.topic) {
+		console.error(error(`Missing required property 'topic'. When defining a 'cloud.pubsub' trigger, a 'topic' must be provided in the now.json file.`))
+		return 1
+	}
+	if (triggerType == 'cloud.storage' && !gcpConfig.trigger.bucket) {
+		console.error(error(`Missing required property 'bucket'. When defining a 'cloud.storage' trigger, a 'bucket' must be provided in the now.json file.`))
+		return 1
+	}
+	const resource = triggerType == 'cloud.pubsub' || triggerType == 'cloud.storage'
+		? { resource: triggerType == 'cloud.pubsub' ? `projects/${project.id}/topics/${gcpConfig.trigger.topic}` : `projects/${project.id}/buckets/${gcpConfig.trigger.bucket}` }
+		: {}
+
+	const trigger = triggerType != 'https' 
+		? { eventTrigger: Object.assign(resource, { eventType: `providers/${triggerType}/eventTypes/${EVENT_TYPES[triggerType]}` }) }
+		: { httpsTrigger: { url: null } }
+
 
 	const { argv: argv_ } = ctx
 	const argv = mri(argv_, {
@@ -102,8 +136,6 @@ const deploy = async (ctx) => {
 			throw err
 		}
 	}
-	
-	const region = gcpConfig.region || 'us-central1'
 
 	console.log(
 		info(
@@ -131,10 +163,7 @@ const deploy = async (ctx) => {
 		)
 	)
 
-	const deploymentId = gcpConfig.functionName || 'now-' + desc.name + '-' + (await uid(10))
 	const zipFileName = `${deploymentId}.zip`
-
-	const { project } = ctx.authConfig.credentials.find(p => p.provider === 'gcp')
 
 	const resourcesStart = Date.now()
 
@@ -209,6 +238,7 @@ const deploy = async (ctx) => {
 		return 1
 	}
 
+	// API documented at https://cloud.google.com/functions/docs/reference/rest/v1beta2/projects.locations.functions#CloudFunction 
 	debug('creating gcp function create')
 	const fnCreateRes = await fetch(`https://cloudfunctions.googleapis.com/v1beta2/projects/${project.id}/locations/${region}/functions${fnExists ? `/${deploymentId}` : ''}`,
 		{
@@ -217,16 +247,13 @@ const deploy = async (ctx) => {
 				'Content-Type': 'application/json',
 				Authorization: `Bearer ${token}`
 			},
-			body: JSON.stringify({
+			body: JSON.stringify(Object.assign({
 				name: `projects/${project.id}/locations/${region}/functions/${deploymentId}`,
-				timeout: gcpConfig.timeout || '15s',
-				availableMemoryMb: gcpConfig.memory || 512,
+				timeout: _timeout,
+				availableMemoryMb: memory,
 				sourceArchiveUrl: `gs://${encodeURIComponent(bucketName)}/${zipFileName}`,
-				entryPoint: 'handler',
-				httpsTrigger: {
-					url: null
-				}
-			})
+				entryPoint: 'handler'
+			}, trigger))
 		}
 	)
 
@@ -244,8 +271,8 @@ const deploy = async (ctx) => {
 	}
 
 	let retriesLeft = 10
-	let status
 	let url = ''
+	let status, eventTrigger, httpsTrigger
 
 	do {
 		if (status === 'FAILED') {
@@ -270,7 +297,10 @@ const deploy = async (ctx) => {
 			return 1
 		}
 
-		({ status, httpsTrigger: { url } } = await checkExistsRes.json())
+		({ status, httpsTrigger, eventTrigger } = await checkExistsRes.json())
+		if (httpsTrigger) 
+			url = httpsTrigger.url
+
 	} while (status !== 'READY')
 
 	stopResourcesSpinner()
@@ -284,13 +314,13 @@ const deploy = async (ctx) => {
 
 	const copied = copyToClipboard(url, true)
 
-	console.log(
-		success(
-			`${link(url)} ${copied ? gray('(in clipboard)') : ''} ${gray(
-				`[${ms(Date.now() - start)}]`
-			)}`
-		)
-	)
+	const successMsg = 
+		triggerType == 'cloud.pubsub' ? success(`Function ready to respond to 'cloud.pubsub' event on topic '${resource.resource}' ${gray(`[${ms(Date.now() - start)}]`)}`) : 
+		triggerType == 'cloud.storage' ? success(`Function ready to respond to 'object.change' event on bucket '${resource.resource}' ${gray(`[${ms(Date.now() - start)}]`)}`) :
+		triggerType == 'google.firebase.database' ? success(`Function ready to respond to 'ref.write' event on firebase ${gray(`[${ms(Date.now() - start)}]`)}`) :
+		success(`${link(url)} ${copied ? gray('(in clipboard)') : ''} ${gray(`[${ms(Date.now() - start)}]`)}`)
+
+	console.log(successMsg)
 
 	return 0
 }

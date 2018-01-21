@@ -194,12 +194,7 @@ const deploy = async (ctx) => {
 	}
 
 	debug('creating gcp storage file')
-	const fileRes = await fetch(
-		`https://www.googleapis.com/upload/storage/v1/b/${encodeURIComponent(
-			bucketName
-		)}/o?uploadType=media&name=${encodeURIComponent(
-			zipFileName
-		)}&project=${encodeURIComponent(project.id)}`,
+	const fileRes = await fetch(`https://www.googleapis.com/upload/storage/v1/b/${encodeURIComponent(bucketName)}/o?uploadType=media&name=${encodeURIComponent(zipFileName)}&project=${encodeURIComponent(project.id)}`,
 		{
 			method: 'POST',
 			headers: {
@@ -219,8 +214,7 @@ const deploy = async (ctx) => {
 	}
 
 	debug('creating gcp function create')
-	const fnCreateRes = await fetch(
-		`https://cloudfunctions.googleapis.com/v1beta2/projects/${project.id}/locations/${region}/functions${fnExists ? `/${deploymentId}` : ''}`,
+	const fnCreateRes = await fetch(`https://cloudfunctions.googleapis.com/v1beta2/projects/${project.id}/locations/${region}/functions${fnExists ? `/${deploymentId}` : ''}`,
 		{
 			method: fnExists ? 'PUT' : 'POST',
 			headers: {
@@ -231,9 +225,7 @@ const deploy = async (ctx) => {
 				name: `projects/${project.id}/locations/${region}/functions/${deploymentId}`,
 				timeout: gcpConfig.timeout || '15s',
 				availableMemoryMb: gcpConfig.memory || 512,
-				sourceArchiveUrl: `gs://${encodeURIComponent(
-					bucketName
-				)}/${zipFileName}`,
+				sourceArchiveUrl: `gs://${encodeURIComponent(bucketName)}/${zipFileName}`,
 				entryPoint: 'handler',
 				httpsTrigger: {
 					url: null
@@ -244,12 +236,7 @@ const deploy = async (ctx) => {
 
 	if (403 === fnCreateRes.status) {
 		const url = `https://console.cloud.google.com/apis/api/cloudfunctions.googleapis.com/overview?project=${project.id}`
-		console.error(
-			error(
-				'GCP Permission Denied error. Make sure the "Google Cloud Functions API" ' +
-          `is enabled in the API Manager\n  ${bold('API Manager URL')}: ${link(url)}`
-			)
-		)
+		console.error(error(`GCP Permission Denied error. Make sure the "Google Cloud Functions API" is enabled in the API Manager\n  ${bold('API Manager URL')}: ${link(url)}`))
 		return 1
 	}
 
@@ -266,14 +253,14 @@ const deploy = async (ctx) => {
 
 	do {
 		if (status === 'FAILED') {
-			console.error(
-				error('API resources failed to deploy.')
-			)
+			console.error(error('API resources seem to have failed to deploy. Double-check your Google Cloud account to gather more details.'))
+			stopResourcesSpinner()
 			return 1
 		} else if (!--retriesLeft) {
 			console.error(
 				error('Could not determine status of the deployment: ' + String(url))
 			)
+			stopResourcesSpinner()
 			return 1
 		} else {
 			await sleep(5000)
@@ -299,7 +286,7 @@ const deploy = async (ctx) => {
 		)
 	)
 
-	const copied = copyToClipboard(url, ctx.config.copyToClipboard)
+	const copied = copyToClipboard(url, true)
 
 	console.log(
 		success(

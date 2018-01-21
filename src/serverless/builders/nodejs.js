@@ -16,6 +16,8 @@ const nodejsBuilder = async (dir, desc, { overrides = {} } = {}) => {
 	const targetPath = join(tmpdir(), tmpDirName)
 
 	debug('init nodejs project build stage in', targetPath)
+
+	// 1. Create the temp folder that will hold the files to be zipped.
 	await mkdir(targetPath)
 
 	// produce hard links of the source files in the target dir
@@ -82,8 +84,8 @@ const nodejsBuilder = async (dir, desc, { overrides = {} } = {}) => {
 			const stats = await stat(path)
 			debug('adding', path)
 			return stats.isDirectory()
-				? archive.directory(path, file, { stats })
-				: archive.file(path, { name: file, stats })
+				? archive.directory(path, file)
+				: archive.file(path, { name: file })
 		})
 	)
 

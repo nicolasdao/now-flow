@@ -229,55 +229,59 @@ const deploy = (env='default', noalias=false) => {
 	return updateNowJson(env, configFiles).then(out => { nowUpdate = out })
 		.then(() => updatePackageJson(env, configFiles).then(out => { pkgUpdate = out }))
 		.then(() => {
-			if (!nowUpdate.err && !pkgUpdate.err) {
-				try {
-					if (nowUpdate.hostingType == 'gcp') {
-						const deployConfig = {
-							config: configFileManager.readConfigFile(),
-							authConfig: configFileManager.readAuthConfigFile(),
-							argv: configFileManager.readLocalConfig()
-						}
-						gcpDeploy(deployConfig)
-
-						//require('child_process').execSync('now gcp', { stdio: 'inherit' })
-					}
-					else
-						require('child_process').execSync('now', { stdio: 'inherit' })
-				}
-				catch(err) {
-					deployError = err
-				}
-				try {
-					if (!deployError && !noalias && nowUpdate.alias) {
-						require('child_process').execSync('now alias', { stdio: 'inherit' })
-					}
-				}
-				catch(err) {
-					aliasError = err
-				}
-
-				return restoreFiles(nowUpdate, pkgUpdate)
+			if (!nowUpdate.err && !pkgUpdate.err)
+				return Promise.resolve(null)
 					.then(() => {
-						if (aliasError) {
-							console.log('Error while aliasing'.red)
-							exit(aliasError)
+						try {
+							if (nowUpdate.hostingType == 'gcp') {
+								const deployConfig = {
+									config: configFileManager.readConfigFile(),
+									authConfig: configFileManager.readAuthConfigFile(),
+									argv: configFileManager.readLocalConfig()
+								}
+								return gcpDeploy(deployConfig)
+
+							//require('child_process').execSync('now gcp', { stdio: 'inherit' })
+							}
+							else
+								require('child_process').execSync('now', { stdio: 'inherit' })
 						}
-						if (deployError) {
-							console.log('Error while deploying'.red)
-							exit(deployError)
-						}
-						if (pkgUpdate.err) {
-							console.log('Error while updating the package.json pre-deployment'.red)
-							console.log(pkgUpdate.err.subject.red)
-							exit(pkgUpdate.err.body)
-						}
-						if (nowUpdate.err) {
-							console.log('Error while updating the now.json pre-deployment'.red)
-							console.log(nowUpdate.err.subject.red)
-							exit(nowUpdate.err.body)
+						catch(err) {
+							deployError = err
 						}
 					})
-			}
+					.then(() => {
+						try {
+							if (!deployError && !noalias && nowUpdate.alias) {
+								require('child_process').execSync('now alias', { stdio: 'inherit' })
+							}
+						}
+						catch(err) {
+							aliasError = err
+						}
+
+						return restoreFiles(nowUpdate, pkgUpdate)
+							.then(() => {
+								if (aliasError) {
+									console.log('Error while aliasing'.red)
+									exit(aliasError)
+								}
+								if (deployError) {
+									console.log('Error while deploying'.red)
+									exit(deployError)
+								}
+								if (pkgUpdate.err) {
+									console.log('Error while updating the package.json pre-deployment'.red)
+									console.log(pkgUpdate.err.subject.red)
+									exit(pkgUpdate.err.body)
+								}
+								if (nowUpdate.err) {
+									console.log('Error while updating the now.json pre-deployment'.red)
+									console.log(nowUpdate.err.subject.red)
+									exit(nowUpdate.err.body)
+								}
+							})
+					})
 		})
 }
 

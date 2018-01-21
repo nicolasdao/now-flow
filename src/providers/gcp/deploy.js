@@ -102,11 +102,7 @@ const deploy = async (ctx) => {
 			throw err
 		}
 	}
-
-	const overrides = {
-		'function.js': getFunctionHandler(desc)
-	}
-
+	
 	const region = gcpConfig.region || 'us-central1'
 
 	console.log(
@@ -119,7 +115,7 @@ const deploy = async (ctx) => {
 
 	const buildStart = Date.now()
 	const stopBuildSpinner = wait('Building and bundling your app…')
-	const zipFile = await build(resolved, desc, { overrides })
+	const zipFile = await build(resolved, desc)
 	stopBuildSpinner()
 
 	if (zipFile.length > 100 * 1024 * 1024) {

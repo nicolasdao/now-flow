@@ -45,13 +45,25 @@ const getProcess = () => process
 /*eslint-enable */
 
 const deploy = async ({ config, authConfig, argv }) => {
+
+	// Example now.json for awsConfig
+	// {
+	//   timeout: String,
+	//   memory: Number,
+	//   region: String
+	// }
+	const awsConfig = (argv || {}).aws || {}
+	const region = awsConfig.region || 'us-west-1'
+	const _timeout = awsConfig.timeout && typeof(awsConfig.timeout) == 'number' ? awsConfig.timeout : 15
+	const memory = awsConfig.memory && typeof(awsConfig.memory) == 'number' ? awsConfig.memory : 512
+
 	const _argv = mri(argv, {
 		boolean: ['help'],
 		alias: {
 			help: 'h'
 		}
 	})
-
+	
 	// `now [provider] [deploy] [target]`
 	const [cmdOrTarget = null, target_ = null] = _argv._.slice(2).slice(-2)
 
@@ -91,14 +103,8 @@ const deploy = async ({ config, authConfig, argv }) => {
 		}
 	}
 
-	// a set of files that we personalize for this build
-	const overrides = {
-		'__now_handler.js': getLambdaHandler(desc)
-	}
-	
 	// initialize aws client
 	const aws = getAWS(authConfig)
-	const region = aws.config.region || 'us-west-1'
 
 	console.log(
 		info(
@@ -110,7 +116,7 @@ const deploy = async ({ config, authConfig, argv }) => {
 	const buildStart = Date.now()
 	const stopBuildSpinner = wait('Building and bundling your app…')
 
-	const zipFile = await build(resolved, desc, { overrides })
+	const zipFile = await build(resolved, desc)
 	stopBuildSpinner()
 
 	// lambda limits to 50mb
@@ -178,17 +184,13 @@ const deploy = async ({ config, authConfig, argv }) => {
 					Runtime: 'nodejs6.10',
 					Description: desc.description,
 					FunctionName: deploymentId,
-					Handler: '__now_handler.handler',
+					Handler: 'index.handler',
 					Role: role.Role.Arn,
-					Timeout: 15,
-					MemorySize: 512
+					Timeout: _timeout,
+					MemorySize: memory
 				})
 			} catch (err) {
-				if (
-					err.retryable ||
-          // created role is not ready
-          err.code === 'InvalidParameterValueException'
-				) {
+				if (err.retryable || err.code === 'InvalidParameterValueException') { // created role is not ready
 					debug('retrying creating function (%s)', err.message)
 					throw err
 				}
@@ -280,7 +282,7 @@ const deploy = async ({ config, authConfig, argv }) => {
 	)
 
 	const url = `https://${api.id}.execute-api.${region}.amazonaws.com/now`
-	const copied = copyToClipboard(url, config.copyToClipboard)
+	const copied = copyToClipboard(url, true)
 
 	console.log(
 		success(

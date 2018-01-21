@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/nicolasdao/now-flow/compare/v0.4.2...v0.5.0) (2018-01-21)
+
+
+### Features
+
+* Add support for custom AWS settings for each env in the now.json ([a5f01f1](https://github.com/nicolasdao/now-flow/commit/a5f01f1))
+
+
+
 <a name="0.4.2"></a>
 ## [0.4.2](https://github.com/nicolasdao/now-flow/compare/v0.4.1...v0.4.2) (2018-01-21)
 

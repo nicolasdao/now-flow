@@ -20,7 +20,6 @@ const success = require('../../util/output/success')
 const param = require('../../util/output/param')
 const humanPath = require('../../util/humanize-path')
 const build = require('../../serverless/build')
-const getLambdaHandler = require('./get-lambda-handler')
 const getAWS = require('./get-aws')
 const describeProject = require('../../describe-project')
 const copyToClipboard = require('../../util/copy-to-clipboard')
@@ -44,7 +43,7 @@ const IAM_POLICY_DOCUMENT = {
 const getProcess = () => process
 /*eslint-enable */
 
-const deploy = async ({ config, authConfig, argv }) => {
+const deploy = async ({ authConfig, argv }) => {
 
 	// Example now.json for awsConfig
 	// {
@@ -63,7 +62,7 @@ const deploy = async ({ config, authConfig, argv }) => {
 			help: 'h'
 		}
 	})
-	
+
 	// `now [provider] [deploy] [target]`
 	const [cmdOrTarget = null, target_ = null] = _argv._.slice(2).slice(-2)
 

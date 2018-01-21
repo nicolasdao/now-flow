@@ -24,7 +24,6 @@ const build = require('../../serverless/build')
 const getToken = require('./util/get-access-token')
 const describeProject = require('../../describe-project')
 const copyToClipboard = require('../../util/copy-to-clipboard')
-const getFunctionHandler = require('./util/get-function-handler')
 const generateBucketName = require('./util/generate-bucket-name')
 const { writeToConfigFile } = require('../../util/config-files')
 
@@ -44,7 +43,7 @@ const deploy = async (ctx={}) => {
 
 	const { project } = ctx.authConfig.credentials.find(p => p.provider === 'gcp') || {}
 	if (!project) {
-		console.error(error(`Missing required 'gcp' project configuration. Run 'now gcp login' and choose a project.`))
+		console.error(error('Missing required \'gcp\' project configuration. Run \'now gcp login\' and choose a project.'))
 		return 1
 	}
 
@@ -72,11 +71,11 @@ const deploy = async (ctx={}) => {
 	const triggerType = gcpConfig.trigger && gcpConfig.trigger.type ? gcpConfig.trigger.type : 'https'
 
 	if (triggerType == 'cloud.pubsub' && !gcpConfig.trigger.topic) {
-		console.error(error(`Missing required property 'topic'. When defining a 'cloud.pubsub' trigger, a 'topic' must be provided in the now.json file.`))
+		console.error(error('Missing required property \'topic\'. When defining a \'cloud.pubsub\' trigger, a \'topic\' must be provided in the now.json file.'))
 		return 1
 	}
 	if (triggerType == 'cloud.storage' && !gcpConfig.trigger.bucket) {
-		console.error(error(`Missing required property 'bucket'. When defining a 'cloud.storage' trigger, a 'bucket' must be provided in the now.json file.`))
+		console.error(error('Missing required property \'bucket\'. When defining a \'cloud.storage\' trigger, a \'bucket\' must be provided in the now.json file.'))
 		return 1
 	}
 	const resource = triggerType == 'cloud.pubsub' || triggerType == 'cloud.storage'
@@ -272,7 +271,7 @@ const deploy = async (ctx={}) => {
 
 	let retriesLeft = 10
 	let url = ''
-	let status, eventTrigger, httpsTrigger
+	let status, httpsTrigger
 
 	do {
 		if (status === 'FAILED') {
@@ -297,7 +296,7 @@ const deploy = async (ctx={}) => {
 			return 1
 		}
 
-		({ status, httpsTrigger, eventTrigger } = await checkExistsRes.json())
+		({ status, httpsTrigger } = await checkExistsRes.json())
 		if (httpsTrigger) 
 			url = httpsTrigger.url
 
@@ -316,9 +315,9 @@ const deploy = async (ctx={}) => {
 
 	const successMsg = 
 		triggerType == 'cloud.pubsub' ? success(`Function ready to respond to 'cloud.pubsub' event on topic '${resource.resource}' ${gray(`[${ms(Date.now() - start)}]`)}`) : 
-		triggerType == 'cloud.storage' ? success(`Function ready to respond to 'object.change' event on bucket '${resource.resource}' ${gray(`[${ms(Date.now() - start)}]`)}`) :
-		triggerType == 'google.firebase.database' ? success(`Function ready to respond to 'ref.write' event on firebase ${gray(`[${ms(Date.now() - start)}]`)}`) :
-		success(`${link(url)} ${copied ? gray('(in clipboard)') : ''} ${gray(`[${ms(Date.now() - start)}]`)}`)
+			triggerType == 'cloud.storage' ? success(`Function ready to respond to 'object.change' event on bucket '${resource.resource}' ${gray(`[${ms(Date.now() - start)}]`)}`) :
+				triggerType == 'google.firebase.database' ? success(`Function ready to respond to 'ref.write' event on firebase ${gray(`[${ms(Date.now() - start)}]`)}`) :
+					success(`${link(url)} ${copied ? gray('(in clipboard)') : ''} ${gray(`[${ms(Date.now() - start)}]`)}`)
 
 	console.log(successMsg)
 

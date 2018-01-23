@@ -1,14 +1,13 @@
 # NowFlow - Automate your Zeit Now Deployments &middot;  [![NPM](https://img.shields.io/npm/v/now-flow.svg?style=flat)](https://www.npmjs.com/package/now-flow) [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Neap](https://neap.co/img/made_by_neap.svg)](#this-is-what-we-re-up-to)
+Out-of-the-box, [_Zeit now-CLI_](https://zeit.co/now) does not offer any opiniated way to organize your variables on a per environment basis (e.g. database credentials, keys, ...). As of version 9.2.5, bugs still exist to deploy to AWS lambdas, and no support is provided to make functions deployed to Google Cloud to react to other events than an HTTPS request (e.g. Google Cloud Functions can react to Pub/Sub topics (very usefull for event-driven architecture), Google Storage or Firebase database changes). __*NowFlow* enables all those features by simply configuring your traditional *now.json*.__ 
 
-NowFlow reduces the issues that arise when deploying to multiple environments (e.g. dev, staging, production, ...) using [Zeit now-CLI](https://zeit.co/now). Simply define your alias and all your environment variables specific to each environment inside your traditional __now.json__, and let NowFlow do the rest. 
-
-[__*Zeit now-CLI*__](https://zeit.co/now) allows to deploy serverless applications to its own serverless infrastructure or to the most popular FaaS (i.e. Function as a Service) solutions (e.g. [Google Cloud Functions](https://cloud.google.com/functions/), [AWS Lambdas](https://aws.amazon.com/lambda)). However, a common challenge is to establish a sound strategy to manage multiple environments (e.g. dev, staging, production, ...). This process is obviously proned to errors. It is also tedious if you're deploying often. This is why we created __*now-flow*__.
+NowFlow offers a strategy to manage multiple environments for any type of nodejs projects. It works especially well when it is combined with [__*Webfunc*__](https://github.com/nicolasdao/webfunc). Together, those 2 projects allow to deploy Express-like apps to the most popular serverless platforms (Zeit Now, AWS Lambdas, GCF) and will unlock apps that can react to __*Google Pub/Sub Topics*__ and __*Google Storage changes*__ (more info in the [FAQ](#faq) / [What Problems Does NowFlow Solve](#what-problems-does-nowflow-solve)).
 
 # Table of Contents
 > * [Install](#install)
-> * [Problem Explained](#problem-explained)
-> * [Solution](#solution)
->   - [How NowFlow Works?](#how-nowflow-works)
+> * [How To Use It?](#how-to-use-it)
+>   - [Basics](#basics)
+>   - [Google Cloud Functions for Pub/Sub or Storage Events](#google-cloud-functions-for-pubsub-or-storage-events)
 >   - [The Most Minimal Setup](#the-most-minimal-setup)
 >   - [Skipping Aliasing](#skipping-aliasing)
 >   - [Modifying The package.json's "scripts" property For Each Environment](#modifying-the-packagejsons-scripts-property-for-each-environment)
@@ -23,41 +22,18 @@ NowFlow reduces the issues that arise when deploying to multiple environments (e
 npm install now -g
 ```
 ## Install NowFlow
-Either install it globally:
-```
-npm install now-flow -g
-```
-
-Or embed it inside your project to run it through npm:
-
+Embed it inside your project as a dev dependency to run it through npm (RECOMMENDED WAY):
 ```
 npm install now-flow --save-dev
 ```
 
-The reason you would do that is to simply embed it in your project and that add a script in your _package.json_ similar to `"deploy:prod": "nowflow production"`. That way your collaborators don't have to worry to install globally yet another tool and can simply run `npm run deploy:prod`.
-
-# Problem Explained
-
-[__*Zeit now-CLI*__](https://zeit.co/now) allows to deploy serverless applications to its own serverless infrastructure or to the most popular FaaS (i.e. Function as a Service) solutions (e.g. [Google Cloud Functions](https://cloud.google.com/functions/), [AWS Lambdas](https://aws.amazon.com/lambda)). However, a common challenge is to establish a sound strategy to manage multiple environments (e.g. dev, staging, production, ...). Typically, those environments might have a different:
-- `hostingType` (e.g. localhost, now, gcp, aws, ...).
-- `alias` if the application is deployed to [Zeit now-CLI](https://zeit.co/now).
-- `start` script in the package.json.
-- Many other environment specific variables.
-
-The manual solution is to:
-1. Update the `start` script in the _package.json_ specific to your environment if you deploy to Zeit Now (e.g. production: `"start": "NODE_ENV=production node index.js"`, staging: `"start": "NODE_ENV=staging node index.js"`, localhost: `"start": "node-dev index.js"`).
-2. If you're deploying to [Google Cloud Functions](https://cloud.google.com/functions/), you might need to configure the `gcp` property in the _now.json_.
-3. If you're using the [Webfunc](https://github.com/nicolasdao/webfunc) serverless web framework, then you also need to set up the `env.active` property to the target environment in the _now.json_.
-4. Run the right command (e.g. `now` if deploying to [Zeit Now](https://zeit.co/now), and `now gcp` if deploying to [Google Cloud Functions](https://cloud.google.com/functions/)).
-5. Potentially _alias_ your deployment if your're deploying to [Zeit Now](https://zeit.co/now):
-> - Update the `alias` property of the _now.json_ file to the alias name specific to your environment.
-> - Run `now alias`
-
-This process is obviously proned to errors. It is also tedious if you're deploying often. This is why we created __*now-flow*__. 
-
-# Solution
-## How NowFlow Works?
-Configure your _now.json_ once, and then replace all the manual steps above with a single command similar to `nowflow production`.
+Or install it globally:
+```
+npm install now-flow -g
+```
+# How To Use It?
+## Basics
+Configure your _now.json_ once, and then replace all the manual steps above with a single command similar to `nowflow production` (or `npm run deploy:prod` if you've configured that task in your package.json, which is the recommended way).
 
 __*Example:*__
 
@@ -111,6 +87,10 @@ This will deploy to [Google Cloud Functions](https://cloud.google.com/functions/
 No more deployment then aliasing steps. No more worries that some environment variables have been properly deployed to the right environment. 
 
 > Learn more details on how NowFlow works in the [How Does NowFlow Work?](#how-does-nowflow-work) under the [FAQ](#faq) section.
+
+## Google Cloud Functions for Pub/Sub or Storage Events
+
+This is only possible when using the [__*Webfunc*__](https://github.com/nicolasdao/webfunc) project that allows to write Express-like apps to run everywhere. There are examples on that project documentation [__*here*__](https://github.com/nicolasdao/webfunc#google-pubsub-topic--storage-trigger-based-functions). 
 
 ## The Most Minimal Setup
 You must first create a __*now.json*__ file in the root of your project's directory as follow:
@@ -176,6 +156,24 @@ In the example above, we're making sure that the _package.json_ contains a _star
 If you're using the serverless web framework [Webfunc](https://github.com/nicolasdao/webfunc), the above command will also make sure that the property `env.active` of the _now.json_ is also set to `production` before deploying. 
 
 # FAQ
+## What Problems Does NowFlow Solve?
+
+TL;DR - It removes all the manual steps required before deploying to a specific environment (e.g. updating the `start` task in the package.json, changing the config in the now.json) and it adds support for Google Cloud Functions reacting to other events than an HTTPS request.
+
+Out-of-the-box, [__*Zeit now-CLI*__](https://zeit.co/now) does not offer any opiniated way to organize your variables on a per environment basis (e.g. database credentials, keys, ...). As of version 9.2.5, bugs still exist to deploy to AWS lambdas, and no support is provided to make functions deployed to Google Cloud to react to other events than an HTTPS request (e.g. Google Cloud Functions can react to Pub/Sub topics great for event-driven architecture, Google Storage or Firebase database changes). NowFlow enables all those features by simply configuring your traditional __now.json__. This is an opiniated design choice that contrast with maintaining multiple now.json files (e.g. now.dev.json, now.staging.json, now.prod.json, ...) mainly driven by the desire to make working on the localhost easier as well as complying to what the now infrastructure already understand. If your interested in multiple now.json per environment, check the awesome project created by [Jesse Ditson](https://github.com/jesseditson) called [now-deploy](https://github.com/jesseditson/now-deploy).
+
+To understand a bit more how NowFlow works, let's have a look at all the manual steps that would be required before being able to deploy to a specific environment (e.g. staging vs production) using the simple `now` command line:
+
+1. Update the `start` script in the _package.json_ specific to your environment if you deploy to Zeit Now (e.g. production: `"start": "NODE_ENV=production node index.js"`, staging: `"start": "NODE_ENV=staging node index.js"`, localhost: `"start": "node-dev index.js"`).
+2. If you're deploying to [Google Cloud Functions](https://cloud.google.com/functions/), you might need to configure the `gcp` property in the _now.json_.
+3. If you're using the [Webfunc](https://github.com/nicolasdao/webfunc) serverless web framework, then you also need to set up the `env.active` property to the target environment in the _now.json_.
+4. Run the right command (e.g. `now` if deploying to [Zeit Now](https://zeit.co/now), and `now gcp` if deploying to [Google Cloud Functions](https://cloud.google.com/functions/)).
+5. Potentially _alias_ your deployment if your're deploying to [Zeit Now](https://zeit.co/now):
+> - Update the `alias` property of the _now.json_ file to the alias name specific to your environment.
+> - Run `now alias`
+
+This process is obviously proned to errors. It is also tedious if you're deploying often. This is why we created __*now-flow*__. 
+
 ## How Does NowFlow Work?
 NowFlow makes sure that both your _package.json_ and your _now.json_ are configured properly based on the environment you're targeting. It does that in 2 steps:
 1. Create a temporary backup of your files in case something goes wrong. That's why you should see that during your deployment, the following 2 files are created: __*.package.backup.json*__, __*.now.backup.json*__. Those files will automatically deleted if the deployment is successful.

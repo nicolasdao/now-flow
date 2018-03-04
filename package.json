@@ -54,6 +54,7 @@
     "pipe-streams-to-promise": "^0.2.0",
     "printf": "^0.2.5",
     "querystring": "^0.2.0",
+    "read-pkg": "^3.0.0",
     "rimraf": "^2.6.2",
     "shortid": "^2.2.8",
     "strip-ansi": "^4.0.0",

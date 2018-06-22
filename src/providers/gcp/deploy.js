@@ -136,13 +136,8 @@ const deploy = async (ctx={}) => {
 		}
 	}
 
-	console.log(
-		info(
-			`Deploying ${param(humanPath(resolved))} ${gray('(gcp)')} ${gray(
-				`(${region})`
-			)}`
-		)
-	)
+	console.log(info(`Deploying ${param(humanPath(resolved))} to gcp project ${param(project.id)} ${gray(`(${region})`)}`))
+	console.log(info(`${gray('NOTE: To deploy to a different gcp project, run: now gcp login')}`))
 
 	const buildStart = Date.now()
 	const stopBuildSpinner = wait('Building and bundling your app…')

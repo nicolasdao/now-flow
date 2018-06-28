@@ -90,6 +90,26 @@ No more deployment then aliasing steps. No more worries that some environment va
 
 > Learn more details on how NowFlow works in the [How Does NowFlow Work?](#how-does-nowflow-work) under the [FAQ](#faq) section.
 
+## Deploying To Google Functions or AWS
+> IMPORTANT: Before deploying to Google Functions (GCP), YOU'LL HAVE TO ENABLE BILLING under the specific project hosting your function. Simply browse to your account ([https://console.cloud.google.com/](https://console.cloud.google.com/)), click on the _Cloud Functions_, and then click on _Enable Billing_.
+
+Before deploying to GCP or AWS, you'll have to login first using:
+
+```
+now gcp login
+```
+
+or
+
+```
+now aws login
+```
+
+After using one of the above command, you'll be prompt to select a project within your GCP or AWS account. Once selected, your function will be deployed withing that project. 
+
+To change to another project, re-rerun the commands above.
+
+
 ## Google Cloud Functions for Pub/Sub or Storage Events
 
 This is only possible when using the [__*Webfunc*__](https://github.com/nicolasdao/webfunc) project that allows to write Express-like apps to run everywhere. There are examples on that project documentation [__*here*__](https://github.com/nicolasdao/webfunc#google-pubsub-topic--storage-trigger-based-functions). 

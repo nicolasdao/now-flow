@@ -17,10 +17,12 @@ NowFlow offers a strategy to manage multiple environments for any type of nodejs
 
 # Install
 ## Prerequisite
-[Zeit now-CLI](https://github.com/zeit/now-cli) must have been installed globally:
+> [Zeit now-CLI](https://github.com/zeit/now-cli) must have been installed globally. The lastest stable version of now that works is @9.0.0. We're currently working on fixing the issues with more recent versions of now.
+
 ```
-npm install now -g
+npm install now@9.0.0 -g
 ```
+
 ## Install NowFlow
 Embed it inside your project as a dev dependency to run it through npm (RECOMMENDED WAY):
 ```

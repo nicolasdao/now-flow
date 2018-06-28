@@ -7,6 +7,7 @@ NowFlow offers a strategy to manage multiple environments for any type of nodejs
 > * [Install](#install)
 > * [How To Use It?](#how-to-use-it)
 >   - [Basics](#basics)
+>   - [Deploying To Google Functions or AWS](#deploying-to-google-functions-or-aws)
 >   - [Google Cloud Functions for Pub/Sub or Storage Events](#google-cloud-functions-for-pubsub-or-storage-events)
 >   - [The Most Minimal Setup](#the-most-minimal-setup)
 >   - [Skipping Aliasing](#skipping-aliasing)
